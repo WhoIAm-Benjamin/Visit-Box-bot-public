@@ -7,7 +7,6 @@ import re # regex
 import logging # for logs
 from selenium import webdriver # web driver for work in browser
 from selenium.common import exceptions as ex
-from pynput.mouse import Controller # mouse scrolling
 from time import sleep # delay
 
 logging.basicConfig(level = logging.DEBUG,
@@ -21,8 +20,8 @@ login = '' # begin login
 password = '' # begin password
 driver = ''
 
-def captcha_autorization():
-    """ Complete captcha_autorization
+def captcha_authorization():
+    """ Complete captcha_authorization
     :return: click on button
     """
     global driver
@@ -31,12 +30,12 @@ def captcha_autorization():
     solution.save()
     # ______________________ НАЙТИ ____________________________
     # _________________ Google Captcha ________________________
-    solution = input('Enter solution of captcha autorization: ')
+    solution = input('Enter solution of captcha authorization: ')
 
     return solution
 
-def autorization(l, p):
-    """ Autorization on our site
+def authorization(l, p):
+    """ Authorization on our site
     :param l: user login
     :param p: user password
     :return: status code
@@ -51,7 +50,7 @@ def autorization(l, p):
     pyautogui.typewrite(p, interval)
     logging.debug('Password enter in form')
     del interval
-    solution = captcha_autorization()
+    solution = captcha_authorization()
     while True:
         try:
             assert driver.find_element_by_name('scpt_code')
@@ -65,7 +64,7 @@ def autorization(l, p):
     pyautogui.typewrite(solution)
     del solution
     # pyautogui.leftClick(random.randint(653, 690), random.randint(550, 557)) _________ЗАМЕНИТЬ____________
-    print('Autorization success')
+    print('Authorization success')
     urls_click()
 
 def solutions():
@@ -89,7 +88,7 @@ def solutions():
                     continue
         solution =  True # _-_-_-_-_-_-_-_-_-_-_ ПЕРЕДАТЬ В ОБРАБОТЧИК (pic)
     except ex.NoSuchElementException:
-        pictures = driver.find_element_by_class_name('recaptcha-checkbox-borderAnimation')
+        pic = driver.find_element_by_class_name('recaptcha-checkbox-borderAnimation')
         solution = False # _-_-_-_-_-_-_-_-_-_-_ ПЕРЕДАТЬ В ОБРАБОТЧИК (pic)
 
     return solution
@@ -163,16 +162,21 @@ def main():
     """
     :return: None
     """
+    global regex
     logging.info('Definition "main"')
     global login, password, driver
+    regex = re.compile('\w{14}\-')
+    logging.debug('Regex is enable')
+    width, height = pyautogui.size()
+    logging.info('Width: {}, Height: {}'.format(width, height))
     # keyboard.wait('ctrl+1')
     # path = os.path.join(os.getcwd(), 'Web Drivers', 'operadriver.exe')
     path = os.path.join(os.getcwd(), 'Web Drivers', 'chromedriver.exe')
     chromeoptions = webdriver.ChromeOptions()
-    logging.debug('chromeOptions is enable')
-    chromeOptions.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
-    # chromeOptions.add_argument("--no-sandbox")
-    # chromeOptions.add_argument("--disable-setuid-sandbox")
+    logging.debug('chromeoptions is enable')
+    chromeoptions.add_experimental_option("prefs", {"profile.managed_default_content_settings.images": 2})
+    # chromeoptions.add_argument("--no-sandbox")
+    # chromeoptions.add_argument("--disable-setuid-sandbox")
     chromeoptions.add_argument("--remote-debugging-port=9222")  # don't remote
     chromeoptions.add_argument("--disable-dev-shm-using")
     chromeoptions.add_argument("--disable-extensions")
@@ -184,15 +188,15 @@ def main():
     # chromeoptions._binary_location = r'C:\Users\Трясучкин\AppData\Local\Programs\Opera\launcher.exe'
     logging.debug('Options was appended')
     try:
-        driver = webdriver.Chrome(executable_path=path, chrome_options = chromeoptions)
+        driver = webdriver.Chrome(executable_path=path, options = chromeoptions)
         logging.debug('Not errors in start browser')
     except ex.WebDriverException as e:
         print('See logs')
         logging.warning('Crash browser: {}'.format(e))
-        sleep(10)
-    driver.get('https://visit-box.net/').open_new_tab()
+        sleep(5)
+    driver.get('https://visit-box.net/')  # .open_new_tab()
     logging.debug('Start page was got')
-    sleep(15)
+    # sleep(15)
     while True:
         print('\rAre you want to continue?(y/n) ', end = '')
         ask = input()
@@ -212,7 +216,7 @@ def main():
                     break
             logging.info('Entered password')
             keyboard.wait('ctrl + 1')
-            autorization(login, password)
+            authorization(login, password)
             break
         elif ask == 'y':
             urls_click()
@@ -222,10 +226,4 @@ def main():
 
 
 if __name__ == '__main__':
-    mouse = Controller()
-    logging.debug('Mouse is enable')
-    regex = re.compile('\w\w\w\w\w\w\w\w\w\w\w\w\w\w\-')
-    logging.debug('Regex is enable')
-    width, height = pyautogui.size()
-    logging.info('Width: {}, Height: {}'.format(width, height))
     main()
